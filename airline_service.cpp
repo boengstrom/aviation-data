@@ -411,32 +411,51 @@ private:
 
 // ---------- HTML helpers ----------
 const char* kCss =
-    "body{font-family:system-ui,sans-serif;margin:0;background:#f6f8fa;color:#1c2733}"
-    "header{background:#0b3d66;color:#fff;padding:1em 1.5em}"
-    "header h1{margin:.1em 0;font-size:1.4em}"
-    "nav{background:#12507f;padding:.5em 1.5em}"
-    "nav a{color:#cfe6f5;margin-right:1.1em;text-decoration:none;font-size:.95em}"
-    "nav a:hover{text-decoration:underline}"
-    "main{max-width:72em;margin:0 auto;padding:1.2em 1.5em 3em}"
-    "h2{margin-top:1.4em;color:#0b3d66}"
-    "table{border-collapse:collapse;background:#fff}"
-    "td,th{border:1px solid #c9d4dd;padding:.32em .7em;text-align:left;font-size:.93em}"
-    "th{background:#e8eff5}"
-    "form{margin:.8em 0}input{padding:.35em .5em;border:1px solid #9db4c4;border-radius:4px}"
-    "button{padding:.4em 1.1em;background:#0b6fa4;color:#fff;border:0;border-radius:4px;cursor:pointer}"
-    ".scroll{max-height:65vh;overflow:auto;border:1px solid #c9d4dd}"
-    "pre.code{background:#10222e;color:#d7e8f0;padding:1em;border-radius:6px}"
-    ".note{color:#5a6b78;font-size:.92em}";
+    "body{font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;margin:0;background:#f1f5f9;color:#1c2733;line-height:1.55}"
+    "header{background:linear-gradient(135deg,#0b3d66 0%,#0e7490 70%,#0891b2 100%);color:#fff;padding:1.7em 1.5em 1.5em}"
+    "header h1{margin:.1em 0;font-size:1.65em;letter-spacing:-.02em}"
+    "nav{background:#0b3d66;padding:.55em 1.5em;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(11,61,102,.3)}"
+    "nav a{color:#cfe6f5;margin-right:.3em;padding:.35em .8em;border-radius:999px;text-decoration:none;font-size:.93em}"
+    "nav a:hover{background:rgba(255,255,255,.15);color:#fff}"
+    "main{max-width:72em;margin:0 auto;padding:1.4em 1.5em 3em}"
+    "h2{margin:1.6em 0 .6em;color:#0b3d66;font-size:1.25em;letter-spacing:-.01em}"
+    "h2:first-child{margin-top:.2em}"
+    "a{color:#0b6fa4}"
+    "table{border-collapse:separate;border-spacing:0;background:#fff;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(11,61,102,.08)}"
+    "td,th{border-bottom:1px solid #dbe4ec;padding:.5em .8em;text-align:left;font-size:.93em}"
+    "th{background:#eef4f9;color:#33506a;font-size:.8em;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}"
+    "tr:last-child td{border-bottom:0}"
+    "tbody tr:hover{background:#f6fafd}"
+    "form{margin:.8em 0}"
+    "input{padding:.5em .7em;border:1px solid #b8c9d6;border-radius:8px;font-size:.95em;background:#fff}"
+    "input:focus{outline:2px solid #7cc4e8;outline-offset:1px;border-color:#0ea5e9}"
+    "button{padding:.5em 1.2em;background:#0b6fa4;color:#fff;border:0;border-radius:8px;cursor:pointer;font-weight:600;font-size:.95em;box-shadow:0 1px 3px rgba(11,61,102,.3)}"
+    "button:hover{background:#095a87}"
+    ".scroll{max-height:65vh;overflow:auto;border:1px solid #dbe4ec;border-radius:10px;box-shadow:0 1px 4px rgba(11,61,102,.08);background:#fff}"
+    ".scroll table{box-shadow:none;border-radius:0}"
+    ".scroll th{position:sticky;top:0}"
+    "#map{border-radius:12px;box-shadow:0 2px 12px rgba(11,61,102,.18)}"
+    "pre.code{background:#10222e;color:#d7e8f0;padding:1em;border-radius:10px;overflow:auto}"
+    ".note{color:#5a6b78;font-size:.92em}"
+    ".stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1em;margin:1em 0 1.4em}"
+    ".stat{background:#fff;border:1px solid #dbe4ec;border-radius:12px;padding:1em .5em;text-align:center;box-shadow:0 1px 4px rgba(11,61,102,.08)}"
+    ".stat-num{font-size:1.9em;font-weight:700;color:#0b3d66;line-height:1.1}"
+    ".stat-label{color:#5a6b78;font-size:.9em;margin-top:.2em}"
+    "footer{text-align:center;color:#5a6b78;font-size:.85em;padding:1.5em 1em 2em}";
 
 std::string page(const std::string& title, const std::string& body) {
-    return "<!doctype html><html><head><meta charset='utf-8'><title>" + title +
+    return "<!doctype html><html><head><meta charset='utf-8'>"
+           "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+           "<link rel='icon' href='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E✈️%3C/text%3E%3C/svg%3E'>"
+           "<title>" + title +
            "</title><style>" + kCss + "</style></head><body>"
            "<header><h1>✈ Aviation Data Front End</h1>"
            "<div class='note' style='color:#cfe6f5'>CIS 51 Vibe Coding — OpenFlights Airline Route Access</div></header>"
            "<nav><a href='/'>Home</a><a href='/airlines'>All Airlines</a>"
            "<a href='/airports'>All Airports</a><a href='/get-id'>Get ID</a>"
            "<a href='/get-owner'>Get Owner</a><a href='/get-code'>Get Code</a></nav>"
-           "<main>" + body + "</main></body></html>";
+           "<main>" + body + "</main>"
+           "<footer>Built by Bo Engstrom · CIS 51 Vibe Coding · De Anza College</footer></body></html>";
 }
 
 std::string backLink() { return "<p><a href='/'>← Back to home</a></p>"; }
@@ -569,8 +588,11 @@ int main(int argc, char** argv) {
 
     svr.Get("/", [&db](const httplib::Request&, httplib::Response& res) {
         std::ostringstream b;
-        b << "<p>Data loaded: <b>" << db.airlineCount() << "</b> airlines, <b>"
-          << db.airportCount() << "</b> airports, <b>" << db.routeCount() << "</b> routes.</p>"
+        b << "<div class='stats'>"
+          << "<div class='stat'><div class='stat-num'>" << db.airlineCount() << "</div><div class='stat-label'>Airlines</div></div>"
+          << "<div class='stat'><div class='stat-num'>" << db.airportCount() << "</div><div class='stat-label'>Airports</div></div>"
+          << "<div class='stat'><div class='stat-num'>" << db.routeCount() << "</div><div class='stat-label'>Routes</div></div>"
+          << "</div>"
           << "<h2>1. Look up one airline or airport (full entity)</h2>"
           << "<form action='/airline'><input name='code' placeholder='Airline IATA, e.g. AA' required>"
           << "<button>Find airline</button></form>"
