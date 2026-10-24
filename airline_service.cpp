@@ -791,13 +791,27 @@ int main(int argc, char** argv) {
                     b << "mark(" << num(h->via->lat) << "," << num(h->via->lon) << ",'"
                       << htmlEscape(h->via->iata) << " — " << htmlEscape(h->via->city)
                       << " (" << h->pairs << " route pairs, "
-                      << static_cast<long>(h->miles + 0.5) << " mi total)';"
+                      << static_cast<long>(h->miles + 0.5) << " mi total)');"
                       << "L.polyline([[" << num(s->lat) << "," << num(s->lon) << "],["
                       << num(h->via->lat) << "," << num(h->via->lon) << "],["
                       << num(d->lat) << "," << num(d->lon)
                       << "]],{color:'#0b6fa4',weight:1.5,opacity:.6}).addTo(map);";
                 }
                 b << "map.fitBounds(pts,{padding:[30,30]});</script>";
+                // Same top-5 data as a plain table, so the information is
+                // readable even if the map tiles or scripts do not load.
+                b << "<div class='scroll'><table>"
+                  << "<tr><th>Rank</th><th>Via</th><th>City</th><th>Country</th>"
+                  << "<th>Route pairs</th><th>Total air miles</th></tr>";
+                int rank = 1;
+                for (const auto* h : byPairs) {
+                    b << "<tr><td>" << rank++ << "</td><td>" << htmlEscape(h->via->iata)
+                      << "</td><td>" << htmlEscape(h->via->city) << "</td><td>"
+                      << htmlEscape(h->via->country) << "</td><td>" << h->pairs
+                      << "</td><td>" << static_cast<long>(h->miles + 0.5)
+                      << "</td></tr>";
+                }
+                b << "</table></div>";
             }
         }
         b << backLink();
