@@ -1,0 +1,12 @@
+[Unit]
+Description=Aviation Data Front End (CIS 51 Vibe Coding) on port 8080
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/aviation
+ExecStart=/opt/aviation/airline_service data
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

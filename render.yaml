@@ -1,0 +1,10 @@
+# Render blueprint — CIS 51 Aviation Data Front End (free tier, Docker).
+# Render builds the Dockerfile, routes HTTPS to the service, and checks
+# /health. The app reads Render's $PORT automatically (default 8080 locally).
+services:
+  - type: web
+    name: aviation-data
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
