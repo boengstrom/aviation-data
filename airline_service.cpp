@@ -778,7 +778,7 @@ int main(int argc, char** argv) {
                   << "<div id='map' style='height:420px;border:1px solid #c9d4dd'></div>"
                   << "<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'>"
                   << "<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>"
-                  << "<script>var map=L.map('map');"
+                  << "<script>window.addEventListener('load',function(){var map=L.map('map');"
                   << "L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',"
                   << "{attribution:'© OpenStreetMap contributors'}).addTo(map);"
                   << "var pts=[];function mark(lat,lon,label){var m=L.marker([lat,lon]).addTo(map);"
@@ -797,7 +797,7 @@ int main(int argc, char** argv) {
                       << num(d->lat) << "," << num(d->lon)
                       << "]],{color:'#0b6fa4',weight:1.5,opacity:.6}).addTo(map);";
                 }
-                b << "map.fitBounds(pts,{padding:[30,30]});</script>";
+                b << "map.fitBounds(pts,{padding:[30,30]});map.invalidateSize();});</script>";
                 // Same top-5 data as a plain table, so the information is
                 // readable even if the map tiles or scripts do not load.
                 b << "<div class='scroll'><table>"
