@@ -415,7 +415,7 @@ const char* kCss =
     "header{background:linear-gradient(135deg,#0b3d66 0%,#0e7490 70%,#0891b2 100%);color:#fff;padding:1.7em 1.5em 1.5em}"
     "header h1{margin:.1em 0;font-size:1.65em;letter-spacing:-.02em}"
     "nav{background:#0b3d66;padding:.55em 1.5em;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(11,61,102,.3)}"
-    "nav a{color:#cfe6f5;margin-right:.3em;padding:.35em .8em;border-radius:999px;text-decoration:none;font-size:.93em}"
+    "nav a{color:#cfe6f5;margin-right:.3em;padding:.35em .8em;border-radius:999px;text-decoration:none;font-size:.93em;background:rgba(255,255,255,.08)}"
     "nav a:hover{background:rgba(255,255,255,.15);color:#fff}"
     "main{max-width:72em;margin:0 auto;padding:1.4em 1.5em 3em}"
     "h2{margin:1.6em 0 .6em;color:#0b3d66;font-size:1.25em;letter-spacing:-.01em}"
@@ -802,7 +802,7 @@ int main(int argc, char** argv) {
                   << "<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>"
                   << "<script>window.addEventListener('load',function(){var map=L.map('map',{center:["
                   << num((s->lat + d->lat) / 2) << "," << num((s->lon + d->lon) / 2)
-                  << "],zoom:2,minZoom:1});"
+                  << "],zoom:2,minZoom:1,scrollWheelZoom:false});"
                   << "L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',"
                   << "{attribution:'© OpenStreetMap contributors'}).addTo(map);"
                   << "var pts=[];function mark(lat,lon,label){var m=L.marker([lat,lon]).addTo(map);"
