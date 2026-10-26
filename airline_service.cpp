@@ -643,7 +643,7 @@ int main(int argc, char** argv) {
         for (const Airline* al : db.airlinesByIataOrder()) {
             if (isNull(al->iata)) continue;
             b << "<option value='" << htmlEscape(al->iata) << "'"
-              << (upper(al->iata) == "AA" ? " selected" : "") << ">"
+              << (upper(al->iata) == "SB" ? " selected" : "") << ">"
               << htmlEscape(al->iata) << " — " << htmlEscape(al->name) << "</option>";
         }
         b << "</select></form>"
