@@ -16,7 +16,8 @@ They are the official copies Bo uploaded on 2026-10-23.
 
 | URL | What it does |
 |---|---|
-| `/` | Home: counts + a form for every feature |
+| `/` | Home: counts + route map (pick an airline, see its routes) + a form for every feature |
+| `/airline-routes?code=AA` | JSON: an airline's airports + route segments (feeds the homepage map) |
 | `/airline?code=AA` | Full airline entity (all elements) |
 | `/airport?code=SFO` | Full airport entity (all elements) |
 | `/airline-airports?code=AA` | Airports reached by an airline, ordered by # routes to/from |

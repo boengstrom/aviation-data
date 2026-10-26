@@ -19,6 +19,9 @@
 //     GET /one-hop?from=SFO&to=ORD         S->X->D direct-route pairs ordered
 //                                          by total air miles + map of the
 //                                          top 5 intermediate cities
+//     GET /airline-routes?code=AA           JSON: an airline's airports +
+//                                          route segments, for the homepage map
+//   Homepage route map: pick an airline, see all of its routes on a map.
 //   Sample-query helpers (from the assignment's verification examples)
 //     GET /airlines-into?airport=DEN       airlines flying into an airport
 //     GET /top-cities?airline=AA&n=3       an airline's top destination cities
@@ -112,6 +115,24 @@ std::string htmlEscape(const std::string& s) {
     }
     return out;
 }
+// Escape a string for use inside a JSON double-quoted string.
+std::string jsonEscape(const std::string& s) {
+    std::ostringstream out;
+    for (unsigned char c : s) {
+        switch (c) {
+            case '"': out << "\\\""; break;
+            case '\\': out << "\\\\"; break;
+            case '\n': out << "\\n"; break;
+            case '\r': out << "\\r"; break;
+            case '\t': out << "\\t"; break;
+            default:
+                if (c < 0x20) out << "\\u" << std::hex << std::setw(4) << std::setfill('0')
+                                  << static_cast<int>(c) << std::dec << std::setfill(' ');
+                else out << static_cast<char>(c);
+        }
+    }
+    return out.str();
+}
 // Format a double the way it appears in the data files (no trailing zeros).
 std::string num(double v) {
     std::ostringstream o;
@@ -200,6 +221,26 @@ public:
         std::sort(out.begin(), out.end(), [](const AirportCount& a, const AirportCount& b) {
             return a.routes != b.routes ? a.routes > b.routes : a.airport->iata < b.airport->iata;
         });
+        return out;
+    }
+
+    // Distinct route pairs (src -> dst) flown by an airline, for the
+    // homepage route map. Each pair appears once, even if the data file
+    // lists it more than once. Pairs with a missing airport, or an airport
+    // with no coordinates (0,0), are skipped.
+    struct RoutePair { const Airport* src; const Airport* dst; };
+    std::vector<RoutePair> routesForAirline(const Airline& al) const {
+        std::set<std::pair<int, int>> seen;
+        std::vector<RoutePair> out;
+        for (const Route& r : routes_) {
+            if (r.airlineId != al.id) continue;
+            if (!seen.insert({r.srcId, r.dstId}).second) continue;
+            const Airport* s = airportById(r.srcId);
+            const Airport* d = airportById(r.dstId);
+            if (!s || !d) continue;
+            if ((s->lat == 0 && s->lon == 0) || (d->lat == 0 && d->lon == 0)) continue;
+            out.push_back({s, d});
+        }
         return out;
     }
 
@@ -429,6 +470,7 @@ const char* kCss =
     "form{margin:.8em 0}"
     "input{padding:.5em .7em;border:1px solid #b8c9d6;border-radius:8px;font-size:.95em;background:#fff}"
     "input:focus{outline:2px solid #7cc4e8;outline-offset:1px;border-color:#0ea5e9}"
+    "select{padding:.5em .7em;border:1px solid #b8c9d6;border-radius:8px;font-size:.95em;background:#fff}"
     "button{padding:.5em 1.2em;background:#0b6fa4;color:#fff;border:0;border-radius:8px;cursor:pointer;font-weight:600;font-size:.95em;box-shadow:0 1px 3px rgba(11,61,102,.3)}"
     "button:hover{background:#095a87}"
     ".scroll{max-height:65vh;overflow:auto;border:1px solid #dbe4ec;border-radius:10px;box-shadow:0 1px 4px rgba(11,61,102,.08);background:#fff}"
@@ -592,8 +634,50 @@ int main(int argc, char** argv) {
           << "<div class='stat'><div class='stat-num'>" << db.airlineCount() << "</div><div class='stat-label'>Airlines</div></div>"
           << "<div class='stat'><div class='stat-num'>" << db.airportCount() << "</div><div class='stat-label'>Airports</div></div>"
           << "<div class='stat'><div class='stat-num'>" << db.routeCount() << "</div><div class='stat-label'>Routes</div></div>"
-          << "</div>"
-          << "<h2>1. Look up one airline or airport (full entity)</h2>"
+          << "</div>";
+        // Route map: pick an airline, see all of its routes on the map.
+        b << "<h2>Route map — pick an airline</h2>"
+          << "<p class='note'>Every route of the airline you select, drawn on the map.</p>"
+          << "<form onsubmit='return false'><label for='airlineSelect'>Airline </label>"
+          << "<select id='airlineSelect' name='airlineSelect'>";
+        for (const Airline* al : db.airlinesByIataOrder()) {
+            if (isNull(al->iata)) continue;
+            b << "<option value='" << htmlEscape(al->iata) << "'"
+              << (upper(al->iata) == "AA" ? " selected" : "") << ">"
+              << htmlEscape(al->iata) << " — " << htmlEscape(al->name) << "</option>";
+        }
+        b << "</select></form>"
+          << "<div id='map' style='height:420px;border:1px solid #c9d4dd'></div>"
+          << "<p class='note' id='mapNote'>Loading routes…</p>"
+          << "<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'>"
+          << "<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>"
+          << "<script>window.addEventListener('load',function(){"
+          << "var sel=document.getElementById('airlineSelect');"
+          << "var note=document.getElementById('mapNote');"
+          << "var map=L.map('map',{center:[20,0],zoom:2,minZoom:1,scrollWheelZoom:false});"
+          << "L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',"
+          << "{attribution:'© OpenStreetMap contributors'}).addTo(map);"
+          << "var layer=L.layerGroup().addTo(map);"
+          << "function show(code){"
+          << "note.textContent='Loading routes…';"
+          << "fetch('/airline-routes?code='+encodeURIComponent(code)).then(function(r){"
+          << "if(!r.ok)throw new Error('not found');return r.json();}).then(function(d){"
+          << "layer.clearLayers();var pts=[];var byIata={};"
+          << "d.airports.forEach(function(a){byIata[a.iata]=a;"
+          << "var m=L.circleMarker([a.lat,a.lon],{radius:3,color:'#0b3d66',weight:1,"
+          << "fillColor:'#0b6fa4',fillOpacity:.9}).addTo(layer);"
+          << "m.bindPopup(a.iata+' — '+a.city);pts.push([a.lat,a.lon]);});"
+          << "d.segments.forEach(function(s){var a=byIata[s[0]],c=byIata[s[1]];if(!a||!c)return;"
+          << "L.polyline([[a.lat,a.lon],[c.lat,c.lon]],{color:'#0b6fa4',weight:1,opacity:.45}).addTo(layer);});"
+          << "note.textContent=d.airline.name+' ('+d.airline.iata+'): '+d.routes.toLocaleString()"
+          << "+' routes, '+d.airports.length+' airports.';"
+          << "if(pts.length){map.fitBounds(pts,{padding:[30,30]});}"
+          << "map.invalidateSize();}).catch(function(){"
+          << "note.textContent='Could not load the route map. Try the “Airports reached by this airline” report below.';});}"
+          << "sel.addEventListener('change',function(){show(sel.value);});"
+          << "show(sel.value);"
+          << "setTimeout(function(){map.invalidateSize();},500);});</script>";
+        b << "<h2>1. Look up one airline or airport (full entity)</h2>"
           << "<form action='/airline'><input name='code' placeholder='Airline IATA, e.g. AA' required>"
           << "<button>Find airline</button></form>"
           << "<form action='/airport'><input name='code' placeholder='Airport IATA, e.g. SFO' required>"
@@ -692,6 +776,47 @@ int main(int argc, char** argv) {
         }
         b << backLink();
         res.set_content(page("Airport airlines by # routes", b.str()), "text/html");
+    });
+
+    // Homepage route map data: JSON with an airline's airports (with
+    // coordinates) and its distinct route segments as IATA pairs.
+    svr.Get("/airline-routes", [&db](const httplib::Request& req, httplib::Response& res) {
+        std::string code = req.get_param_value("code");
+        const Airline* al = db.airlineByIata(code);
+        if (!al) {
+            res.status = 404;
+            res.set_content("{\"error\":\"No airline with IATA code '" + jsonEscape(code) + "'.\"}",
+                            "application/json");
+            return;
+        }
+        auto pairs = db.routesForAirline(*al);
+        std::map<int, const Airport*> airports;
+        for (const auto& p : pairs) {
+            airports[p.src->id] = p.src;
+            airports[p.dst->id] = p.dst;
+        }
+        std::ostringstream j;
+        j << "{\"airline\":{\"iata\":\"" << jsonEscape(al->iata)
+          << "\",\"name\":\"" << jsonEscape(al->name)
+          << "\"},\"routes\":" << pairs.size() << ",\"airports\":[";
+        bool first = true;
+        for (const auto& kv : airports) {
+            const Airport* a = kv.second;
+            if (!first) j << ",";
+            first = false;
+            j << "{\"iata\":\"" << jsonEscape(a->iata)
+              << "\",\"city\":\"" << jsonEscape(a->city)
+              << "\",\"lat\":" << num(a->lat) << ",\"lon\":" << num(a->lon) << "}";
+        }
+        j << "],\"segments\":[";
+        first = true;
+        for (const auto& p : pairs) {
+            if (!first) j << ",";
+            first = false;
+            j << "[\"" << jsonEscape(p.src->iata) << "\",\"" << jsonEscape(p.dst->iata) << "\"]";
+        }
+        j << "]}";
+        res.set_content(j.str(), "application/json");
     });
 
     // 2.2a All airlines ordered by IATA code.
