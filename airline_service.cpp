@@ -712,7 +712,7 @@ int main(int argc, char** argv) {
           << "<input name='to' placeholder='To, e.g. ORD' required>"
           << "<button>Find one-hop routes</button></form>"
           << "<h2>5. Sample queries</h2>"
-          << "<form action='/airlines-into'><input name='airport' placeholder='DEN or Denver' required>"
+          << "<form action='/airlines-into'><input name='airport' placeholder='SFO or San Francisco' required>"
           << "<button>Airlines flying into an airport</button></form>"
           << "<form action='/top-cities'><input name='airline' placeholder='AA' required>"
           << "<input name='n' type='number' value='3' min='1' max='25' style='width:4em'>"
