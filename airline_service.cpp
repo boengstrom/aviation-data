@@ -703,7 +703,7 @@ int main(int argc, char** argv) {
           << "<h2>2. Reports ordered by # routes</h2>"
           << "<form action='/airline-airports'><input name='code' placeholder='Airline IATA, e.g. AA' required>"
           << "<button>Airports reached by this airline</button></form>"
-          << "<form action='/airport-airlines'><input name='code' placeholder='Airport IATA, e.g. DEN' required>"
+          << "<form action='/airport-airlines'><input name='code' placeholder='Airport IATA, e.g. SFO' required>"
           << "<button>Airlines serving this airport</button></form>"
           << "<h2>3. Full reports ordered by IATA code</h2>"
           << "<p><a href='/airlines'>All airlines</a> · <a href='/airports'>All airports</a></p>"
